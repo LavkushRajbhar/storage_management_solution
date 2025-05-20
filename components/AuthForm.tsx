@@ -1,3 +1,5 @@
+/** @format */
+
 "use client";
 
 import { z } from "zod";
@@ -60,8 +62,21 @@ const AuthForm = ({ type }: { type: FormType }) => {
           : await signInUser({ email: values.email });
 
       setAccountId(user.accountId);
-    } catch {
-      setErrorMessage("Failed to create account. Please try again.");
+    } catch (error: any) {
+      if (
+        type === "sign-in" &&
+        error instanceof Error &&
+        error.message === "USER_NOT_FOUND"
+      ) {
+        setErrorMessage("Account not found. Please sign up first.");
+      } else {
+        setErrorMessage(
+          type === "sign-up"
+            ? "Failed to create account. Please try again."
+            : "Failed to sign in. Please try again."
+        );
+      }
+      form.reset();
     } finally {
       setIsLoading(false);
     }
@@ -123,8 +138,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
           <Button
             type="submit"
             className="form-submit-button"
-            disabled={isLoading}
-          >
+            disabled={isLoading}>
             {type === "sign-in" ? "Sign In" : "Sign Up"}
 
             {isLoading && (
@@ -148,8 +162,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
             </p>
             <Link
               href={type === "sign-in" ? "/sign-up" : "/sign-in"}
-              className="ml-1 font-medium text-brand"
-            >
+              className="ml-1 font-medium text-brand">
               {" "}
               {type === "sign-in" ? "Sign Up" : "Sign In"}
             </Link>
